@@ -4,7 +4,6 @@ import { Apiresponse } from "@/lib/utils";
 import { ChangeEvent, useEffect, useState } from "react";
 import Info from "./Info";
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Button } from "./ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
@@ -80,17 +79,17 @@ export default function Search(){
     if (address) {
         fetchData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [address]);
 
     return( // Loading needs to be suspense or something
         <div>
             <span className="m-5">
-                {/* <Label htmlFor="text" className="mb-1">Search</Label> */}
                 <Input
                     type="text"
                     value={query}
                     onChange={handleChange}
-                    placeholder="123.123.123.123:8888 OR hypixel.net"
+                    placeholder="123.123.123.123:8888 OR example.net"
                 />
                 <Button 
                     onClick={handleSubmit}
