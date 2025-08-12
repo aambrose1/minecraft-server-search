@@ -1,12 +1,17 @@
-import { Apiresponse } from "@/lib/utils";
+import { ApiResponse as ApiResponse } from "@/lib/types";
 import Image from 'next/image';
 
 type AppProps = {
-  mydata: Apiresponse
+  mydata: ApiResponse
 };
 
+function htmlDecode(html: string): string | TrustedHTML {
+    return html;
+}
+
 const Info = ({mydata}:AppProps) =>
-    <div className="card-foreground">
+    <div className="">
+        <>
         {mydata.online == true ?
             <Image 
                 src={mydata.icon}
@@ -23,11 +28,14 @@ const Info = ({mydata}:AppProps) =>
                 <><span>
                     🟢<strong>Player Count: </strong>
                     {mydata.players.online} / {mydata.players.max}
-                </span><br /><h2>Version: {mydata.version}</h2><i className="text-sm">{mydata.motd.clean}</i></>
+                </span><br /><h2>Version: {mydata.version}</h2>      
+                <div dangerouslySetInnerHTML={{ __html: htmlDecode(mydata.motd.html) }} />
+        </>
                 :
-                <span>🔴Offline</span>
+                <span>🔴Offline</span> // Bug: Queries that aren't real MC servers also say offline because there wasn't a reliable way to filter
             }
         </div>
+        </>
     </div>
 ;
 

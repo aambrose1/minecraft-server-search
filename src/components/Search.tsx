@@ -1,7 +1,7 @@
 "use client";
 
-import { Apiresponse } from "@/lib/utils";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ApiResponse } from "@/lib/types";
+import { ChangeEvent, useState } from "react";
 import Info from "./Info";
 import { Input } from "@/components/ui/input"
 import { Button } from "./ui/button";
@@ -31,28 +31,29 @@ function checkDomain(domain: string){
 }
 
 export default function Search(){
-    const [address, setAddress] = useState<string>("");
-    const [query, setQuery] = useState<string>("");
-    const [data, setData] = useState<Apiresponse>();
+    const [query, setQuery] = useState<string>(""); 
+    const [data, setData] = useState<ApiResponse>();
     const [error, setError] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
+    const [errorMsg, setErrorMsg] = useState<string>("Unknown error has occured.");
     
-    const fetchData = async () => {
+    const fetchData = async (input: string) => {
         setLoading(true);
-        console.log(BASE_URL+address);
-
+        const address:string = input; 
         try{
             const response = await fetch(BASE_URL+address, OPTIONS);
 
             if (!response.ok) {
+                setErrorMsg("HTTP error! Status: " + response.status);
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
 
-            const data:Apiresponse = await response.json();
+            const data:ApiResponse = await response.json();
             setData(data);
         }
         catch (e){
             console.log("Error fetching server information: "+ e);
+            setErrorMsg("Error fetching server information: "+ e)
             setError(true);
         }
         finally{
@@ -61,13 +62,17 @@ export default function Search(){
     }
 
     const handleSubmit = () => {
-        const input = query.trim();
+        const input = query.trim();        
         const isValid = checkDomain(input) || checkIp(input);
+        const isNumeric  = /^[0-9]*$/.test(input.replace(".","").replace(":",""));
+
+        if (isNumeric) { setErrorMsg("Please enter a valid IP Address (port optional).");} else { setErrorMsg("Please enter a valid domain.");}
+
         setError(!isValid); // set the error when there isn't a valid ip/domain or when there is a valid ip/domain
         console.log(isValid);
         // good to go, so we can fetch
         if (isValid) {
-            setAddress(input);
+            fetchData(input);
         }
     }
 
@@ -75,17 +80,11 @@ export default function Search(){
         await setQuery(e.target.value);
     }
 
-    useEffect(() => {
-    if (address) {
-        fetchData();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [address]);
-
-    return( // Loading needs to be suspense or something
-        <div>
+    return(
+        <div className="">
             <span className="m-5">
                 <Input
+                    className="bg-white"
                     type="text"
                     value={query}
                     onChange={handleChange}
@@ -98,12 +97,12 @@ export default function Search(){
                     Search
                 </Button>
             </span>
-            <div className="grid w-full max-w-xl items-start gap-4">
+            <div className="">
                 {error ? 
                     <Alert variant="destructive">
                     <AlertTitle>Error!</AlertTitle>
                     <AlertDescription>
-                        Please double-check the domain address.
+                        {errorMsg}
                     </AlertDescription>
                     </Alert>
                 :
